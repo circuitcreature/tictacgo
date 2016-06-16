@@ -132,49 +132,46 @@ type game struct{
 	size int
 }
 
+func(g *game)runner(x int, i int)bool{
+	fmt.Println("--",x,i,"-----",g.set[x], g.set[x+i], g.set[x+i+i],"-------")
+
+	if g.set[x] == g.set[x+i] && g.set[x+i] == g.set[x+i+i]{
+		return true
+	}
+	return false
+}
+
 func(g *game)Check(i int)bool{
-
-	x := i / g.size
-	//aka by 1
-	if g.set[x] == g.set[x+1] && g.set[x] == g.set[x+2]{
-		//test horizonal
+	//only works if size is odd
+	if g.runner((i / g.size)*g.size, 1){
 		return true
 	}
-
-	x = i % g.size
-	//aka by 3
-	if g.set[x] == g.set[x+g.size] && g.set[x] == g.set[x+g.size+g.size]{
-		//test vertical
-		fmt.Println("validate first")
+	if g.runner(i % g.size, g.size){
 		return true
 	}
-
-	//if x == x we be in the middle
-
-	//aka by 2
-	x = i
-	if g.set[x] == g.set[x+2] && g.set[x] == g.set[x+4]{
-		fmt.Println("validate by 2")
-		//test horizonal
-		return true
+	switch i{
+		case g.size - 1: fallthrough
+		case g.size * 2:
+			if g.runner(g.size - 1, g.size - 1){
+				return true
+			}
+		case 0: fallthrough
+		case g.size:
+			if g.runner(0, g.size + (g.size / 2)){
+				return true
+			}
+		case (g.size*g.size)/2:
+			if g.runner(g.size - 1, g.size - 1) || g.runner(0, g.size + (g.size / 2)) {
+				//diagonals
+				return true
+			}
 	}
-
-	//aka by 4
-	//for testing
-	x = 0
-	if g.set[x] == g.set[x+4] && g.set[x] == g.set[x+8]{
-		//test horizonal
-		return true
-	}
-
-
 	return false
 }
 
 func(g *game)Validate( i int )bool{
 	if !g.Check( i ){
-		fmt.Println("validate: ", i )
-		//every function will validate by_three
+		
 		return false
 	}
 
@@ -226,12 +223,27 @@ func main(){
 	fmt.Println("Lets play a game!", g)
 	res := g.Validate(x)
 	fmt.Println("validate is", res)
-	x =4
+	fmt.Println("____________\n")
+
+	x = 4
 	g.Set(x, "O")
 	res = g.Validate(x)
 	fmt.Println("Lets play a game!", g)
 	fmt.Println("validate is", res)
+	fmt.Println("____________\n")
 
 
+	x = 8
+	g.Set(x, "O")
+	res = g.Validate(x)
+	fmt.Println("Lets play a game!", g)
+	fmt.Println("validate is", res)
+	fmt.Println("____________\n")
 
+	x = 7
+	g.Set(x, "O")
+	res = g.Validate(x)
+	fmt.Println("Lets play a game!", g)
+	fmt.Println("validate is", res)
+	fmt.Println("____________\n")
 }
