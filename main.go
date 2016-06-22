@@ -106,11 +106,12 @@ func (g *game)GetInput()int{
 }
 
 func main(){
-	g := game{set:[9]string{}, size: 3}
+	g := game{size: 3}
 	winner := false
 	player := true
 	count := 0
 	cur := "X"
+
 	for false == winner{
 		fmt.Println(g)
 
