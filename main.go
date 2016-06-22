@@ -2,6 +2,9 @@ package main
 import(
 	"fmt"
 	"bytes"
+	//"bufio"
+	//"os"
+	"strconv"
 )
 
 func init(){
@@ -133,50 +136,44 @@ type game struct{
 }
 
 func(g *game)runner(x int, i int)bool{
-	fmt.Println("--",x,i,"-----",g.set[x], g.set[x+i], g.set[x+i+i],"-------")
-
 	if g.set[x] == g.set[x+i] && g.set[x+i] == g.set[x+i+i]{
 		return true
 	}
 	return false
 }
 
-func(g *game)Check(i int)bool{
+func(g *game)Validate( i int )bool{
 	//only works if size is odd
 	if g.runner((i / g.size)*g.size, 1){
+		fmt.Println("Checking: 1",i)
 		return true
 	}
 	if g.runner(i % g.size, g.size){
+		fmt.Println("Checking: 2",i)
 		return true
 	}
+
 	switch i{
 		case g.size - 1: fallthrough
 		case g.size * 2:
 			if g.runner(g.size - 1, g.size - 1){
+				fmt.Println("Checking: 3",i)
 				return true
 			}
 		case 0: fallthrough
-		case g.size:
+		case g.size*g.size:
 			if g.runner(0, g.size + (g.size / 2)){
+				fmt.Println("Checking: 4",i)
 				return true
 			}
 		case (g.size*g.size)/2:
 			if g.runner(g.size - 1, g.size - 1) || g.runner(0, g.size + (g.size / 2)) {
+				fmt.Println("Checking: 5",i)
 				//diagonals
 				return true
 			}
 	}
 	return false
-}
-
-func(g *game)Validate( i int )bool{
-	if !g.Check( i ){
-		
-		return false
-	}
-
-
-	return true
 }
 
 func(g *game)Set(i int, s string)bool{
@@ -191,8 +188,19 @@ func (g game) String() string{
 	var buffer bytes.Buffer
 	out := ""
 	pi := 1
+	row := 1
+	new := true
+	buffer.WriteString("\n   ")
+	for k := 0; k < g.size; k++{
+		buffer.WriteString(strconv.Itoa(k+1)+" ")
+	}
 	buffer.WriteString("\n")
 	for k,_ := range g.set{
+		if new {
+			buffer.WriteString(strconv.Itoa(row)+" ")
+			new = false
+			row++
+		}
 		buffer.WriteString("|")
 		if g.set[k] == ""{
 			out = "_"
@@ -201,49 +209,67 @@ func (g game) String() string{
 		}
 		buffer.WriteString(out)
 
-		if pi%3 == 0{
+		if pi%g.size == 0{
 			buffer.WriteString("|")
 			buffer.WriteString("\n")
+			new = true
 		}
 		pi++
 	}
 	return buffer.String()
 }
 
+func (g *game)GetInput()int{
+	var i int
+	_, err := fmt.Scanf("%d", &i)
+
+	if err != nil || i > g.size || i < 0 {
+		fmt.Print("Please enter a valid number.")
+		return g.GetInput()
+	}
+	return i
+}
+
 func main(){
-	g := game{set:[9]string{"X","","O",
-							"", "","X",
-							"O","",""},
-			size: 3}
+	g := game{set:[9]string{}, size: 3}
+	winner := false
+	player := true
+	count := 0
+	cur := "X"
+	for false == winner{
+		fmt.Println(g)
 
-	fmt.Println("Lets play a game!", g)
+		if !player{
+			cur = "O"
+		}else {
+			cur = "X"
+		}
+		fmt.Println("Player ",cur,":")
 
-	x := 1
-	g.Set(x, "X")
-	fmt.Println("Lets play a game!", g)
-	res := g.Validate(x)
-	fmt.Println("validate is", res)
-	fmt.Println("____________\n")
+		fmt.Println("Select a Row:")
+		r := g.GetInput()
 
-	x = 4
-	g.Set(x, "O")
-	res = g.Validate(x)
-	fmt.Println("Lets play a game!", g)
-	fmt.Println("validate is", res)
-	fmt.Println("____________\n")
+		fmt.Println("Select a Column:")
+		c := g.GetInput()
+		i := (r - 1) * 3 + c - 1
 
+		if !g.Set( i, cur ){
+			fmt.Println("Position is already taken.")
+			continue
+		}
 
-	x = 8
-	g.Set(x, "O")
-	res = g.Validate(x)
-	fmt.Println("Lets play a game!", g)
-	fmt.Println("validate is", res)
-	fmt.Println("____________\n")
+		count++
+		if len(g.set) == count{
+			break
+		}
+		winner = g.Validate(i)
+		player = !player
+	}
 
-	x = 7
-	g.Set(x, "O")
-	res = g.Validate(x)
-	fmt.Println("Lets play a game!", g)
-	fmt.Println("validate is", res)
-	fmt.Println("____________\n")
+	fmt.Println(g)
+	if winner {
+		fmt.Println(cur, "is the winner.")
+	}else{
+		fmt.Println("Cats")
+	}
 }
